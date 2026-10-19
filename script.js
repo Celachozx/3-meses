@@ -159,7 +159,21 @@ function fadeA(objetivo, alTerminar) {
   }, MUSICA.fadeMs / pasos);
 }
 
+// Si el mp3 no carga (por ejemplo, no se subió al repo), avisa en la consola
+cancion.addEventListener("error", () => {
+  console.warn("No se pudo cargar la música: " + MUSICA.archivo);
+});
+
+// iPhone/Safari solo deja reproducir audio si play() ocurre justo al tocar.
+// Se arranca en silencio al tocar el sobre y luego iniciarMusica() le da volumen.
+function desbloquearAudio() {
+  cancion.muted = true;
+  const intento = cancion.play();
+  if (intento && intento.catch) intento.catch(() => {});
+}
+
 function iniciarMusica() {
+  cancion.muted = false;
   const intento = cancion.play();
   if (intento && intento.then) {
     intento.then(() => {
@@ -201,6 +215,7 @@ const musicBtn = document.getElementById("music-btn");
 envelope.addEventListener("click", () => {
   if (envelope.classList.contains("open")) return;
   envelope.classList.add("open");
+  desbloquearAudio();
   setTimeout(() => {
     lanzarConfeti(150);
     intro.classList.add("leave");
